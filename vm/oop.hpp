@@ -291,11 +291,11 @@ Object* const cUndef = reinterpret_cast<Object*>(0x22L);
       return flags_.Marked == which;
     }
 
-    capi::Handle* handle() const {
+    capi::Handle* handle(STATE) const {
       return handle_;
     }
 
-    void set_handle(capi::Handle* handle) {
+    void set_handle(STATE, capi::Handle* handle) {
       handle_ = handle;
     }
 
@@ -393,17 +393,23 @@ Object* const cUndef = reinterpret_cast<Object*>(0x22L);
       flags().obj_type = type;
     }
 
-    capi::Handle* handle() {
+    capi::Handle* handle(STATE) {
       if(inflated_header_p()) {
-        return inflated_header()->handle();
+        return inflated_header()->handle(state);
       }
       return NULL;
     }
 
-    void set_handle(capi::Handle* handle) {
+    void set_handle(STATE, capi::Handle* handle) {
       assert(inflated_header_p());
       if(inflated_header_p()) {
-        inflated_header()->set_handle(handle);
+        inflated_header()->set_handle(state, handle);
+      }
+    }
+
+    void clear_handle(STATE) {
+      if(inflated_header_p()) {
+        inflated_header()->set_handle(state, NULL);
       }
     }
 
