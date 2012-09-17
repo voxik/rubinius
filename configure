@@ -46,6 +46,9 @@ class Configure
       alias :`             :msys_backquote
     end
 
+    @ignored_options = []
+    @unrecognized_options = []
+
     # Compiler / build settings
     @cc = ENV['CC'] || 'gcc'
     @cxx = ENV['CXX'] || 'g++'
@@ -220,6 +223,17 @@ class Configure
   def options
     o = Rubinius::Options.new "Usage: configure [options]", 30
     o.left_align
+
+    on_extra_orig = o.on_extra
+    o.on_extra do |option|
+      if ignored_option?(option)
+        @ignored_options << option
+      elsif unrecognized_option?(option)
+        @unrecognized_options << option
+      else
+        on_extra_orig[option]
+      end
+    end
 
     o.doc " Configure settings"
 
@@ -420,6 +434,35 @@ class Configure
 
   end
 
+  IGNORED_OPTIONS = %w{
+    build
+    datadir
+    exec-prefix
+    host
+    infodir
+    libexecdir
+    localstatedir
+    program-prefix
+    sbindir
+    sharedstatedir
+    sysconfdir
+  }
+
+  UNRECOGNIZED_OPTIONS = %w{
+    with
+    without
+    disable
+    enable
+  }
+
+  def ignored_option?(option)
+    !!IGNORED_OPTIONS.detect { |o| option =~ /^--#{o}=/ }
+  end
+
+  def unrecognized_option?(option)
+    !!UNRECOGNIZED_OPTIONS.detect { |o| option =~ /^--#{o}-/ }
+  end
+
   def feature(name, on_by_default=true)
     @features[name] = on_by_default
 
@@ -434,6 +477,9 @@ class Configure
 
   def parse(ary)
     @options.parse ary
+    puts "configure: WARNING: ignored options: #{@ignored_options.join(" ")}" unless @ignored_options.empty?
+    puts "configure: WARNING: unrecognized options: #{@unrecognized_options.join(" ")}" unless @unrecognized_options.empty?
+
   end
 
   def normalize_versions(str)
