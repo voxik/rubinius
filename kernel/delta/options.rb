@@ -232,9 +232,10 @@ module Rubinius
       on "-h", "--help", "Show this message", &help
     end
 
-    # Stores a block that will be called with unrecognized options
+    # Stores a block that will be called with unrecognized options. If no block
+    # is given, the original Proc is returned.
     def on_extra(&block)
-      @on_extra = block
+      @on_extra = block || @on_extra
     end
 
     # Returns a string representation of the options and doc strings.
