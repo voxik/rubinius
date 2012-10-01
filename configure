@@ -435,10 +435,8 @@ class Configure
   end
 
   IGNORED_OPTIONS = %w{
-    build
     datadir
     exec-prefix
-    host
     infodir
     libexecdir
     localstatedir
